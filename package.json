@@ -1,0 +1,19 @@
+{
+  "name": "recipe-app",
+  "version": "1.0.0",
+  "description": "search your favourite meal recipe",
+  "default": "index.html",
+  "scripts": {
+    "start": "parcel index.html",
+    "build": "parcel build index.html"
+  },
+  "author": "Mohammad Ali Shuvo",
+  "license": "ISC",
+  "dependencies": {
+    "parcel": "^2.0.0-rc.0"
+  },
+  "devDependencies": {
+    "@parcel/transformer-image": "^2.0.0-rc.0",
+    "@parcel/transformer-sass": "^2.0.0-rc.0"
+  }
+}
