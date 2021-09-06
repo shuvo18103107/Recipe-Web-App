@@ -10,7 +10,7 @@ class ReciepView {
   render(data) {
     this.#data = data;
 
-    const markup = this._generatedMarkup();
+    const markup = this.#generatedMarkup();
 
     this._clear();
     this.#parentElement.insertAdjacentHTML('afterbegin', markup);
@@ -18,7 +18,7 @@ class ReciepView {
   _clear() {
     this.#parentElement.innerHTML = '';
   }
-  _generatedMarkup() {
+  #generatedMarkup() {
     return `<figure class="recipe__fig">
         <img src="${this.#data.image}" alt="${this.#data.title
       }" crossorigin="anonymous" class="recipe__img"></img> 
@@ -74,7 +74,7 @@ class ReciepView {
         <h2 class="heading--2">Recipe ingredients</h2>
         <ul class="recipe__ingredient-list">
         ${this.#data.ingredients
-        .map(ing => this._generateMarkUpIngredient(ing))
+        .map(ing => this.#generateMarkUpIngredient(ing))
         .join('')}
 
         </ul>
@@ -149,7 +149,7 @@ class ReciepView {
 
 
 
-  _generateMarkUpIngredient(ing) {
+  #generateMarkUpIngredient(ing) {
     return `<li class="recipe__ingredient">
       <svg class="recipe__icon">
         <use href="${icons}#icon-check"></use>

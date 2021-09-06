@@ -1,5 +1,6 @@
 import * as model from './model';
 import recipeView from './views/recipeView';
+import searchView from './views/searchView';
 
 //import assets so that parcel can get it
 
@@ -8,9 +9,7 @@ import recipeView from './views/recipeView';
 import 'core-js/stable';
 //this one polyfilling asybc await and updated all js feature to old browsers
 import 'regenerator-runtime/runtime';
-
-const recipeContainer = document.querySelector('.recipe');
-
+import searchView from './views/searchView';
 const controlRecipes = async function () {
   try {
     const id = window.location.hash.slice(1);
@@ -30,8 +29,25 @@ const controlRecipes = async function () {
     console.log(err.message);
   }
 };
+
+const controlSearchResults = async function () {
+  try {
+    //get search query
+    const query = searchView.getQuery()
+    if (!query) return;
+    // load search results
+    await model.loadSearchResult(query)
+    //render results
+    console.log(model.state.search.results);
+
+  }
+  catch (err) {
+    console.log(err);
+  }
+}
 //Event handlers technique in MVC using publisher subscriber design pattern
 const init = function () {
-  recipeView.adhandlerRender(controlRecipes)
+  recipeView.adhandlerRender(controlRecipes);
+  searchView.adhandlerSearch(controlSearchResults)
 }
 init()
