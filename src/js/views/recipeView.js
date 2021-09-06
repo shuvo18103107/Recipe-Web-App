@@ -107,6 +107,18 @@ class ReciepView {
     this.#parentElement.innerHTML = '';
     this.#parentElement.insertAdjacentHTML('afterbegin', markup);
   }
+  //handling event in mvc architecture-> publisher
+  adhandlerRender(handler) {
+    //if i have multiple event for same dunctionality then i can doi this
+
+    ['hashchange', 'load'].forEach(ev =>
+      window.addEventListener(ev, handler)
+    );
+
+  }
+
+
+
   _generateMarkUpIngredient(ing) {
     return `<li class="recipe__ingredient">
       <svg class="recipe__icon">

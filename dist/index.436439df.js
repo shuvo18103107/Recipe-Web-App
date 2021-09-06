@@ -482,12 +482,10 @@ const controlRecipes = async function() {
         console.log(err.message);
     }
 };
-//if i have multiple event for same dunctionality then i can doi this
-[
-    'hashchange',
-    'load'
-].forEach((ev)=>window.addEventListener(ev, controlRecipes)
-);
+const init = function() {
+    _recipeViewDefault.default.adhandlerRender(controlRecipes);
+};
+init();
 
 },{"./model":"6Yfb5","./views/recipeView":"9q0mt","core-js/stable":"eIyVg","regenerator-runtime/runtime":"cH8Iq","@parcel/transformer-js/src/esmodule-helpers.js":"JacNc"}],"6Yfb5":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
@@ -526,7 +524,7 @@ const loadRecipe = async function(id) {
     }
 };
 
-},{"regenerator-runtime":"cH8Iq","./config":"beA2m","@parcel/transformer-js/src/esmodule-helpers.js":"JacNc","./helpers":"9l3Yy"}],"cH8Iq":[function(require,module,exports) {
+},{"regenerator-runtime":"cH8Iq","./config":"beA2m","./helpers":"9l3Yy","@parcel/transformer-js/src/esmodule-helpers.js":"JacNc"}],"cH8Iq":[function(require,module,exports) {
 /**
  * Copyright (c) 2014-present, Facebook, Inc.
  *
@@ -1171,13 +1169,11 @@ const getJson = async function(url) {
         if (!res.ok) throw new Error(`${data.message} (${res.status})`);
         return data;
     } catch (err) {
-        //throw error with message
-        // throw new Error(`error ${err}`);
         throw err;
     }
 };
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"JacNc","./config":"beA2m"}],"9q0mt":[function(require,module,exports) {
+},{"./config":"beA2m","@parcel/transformer-js/src/esmodule-helpers.js":"JacNc"}],"9q0mt":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 // import icons from '../img/icons.svg' //parcel 1 style
@@ -1205,6 +1201,15 @@ class ReciepView {
         const markup = `<div class="spinner">\n        <svg>\n          <use href="${_iconsSvgDefault.default}#icon-loader"></use>\n        </svg>\n      </div>`;
         this.#parentElement.innerHTML = '';
         this.#parentElement.insertAdjacentHTML('afterbegin', markup);
+    }
+    //handling event in mvc architecture-> publisher
+    adhandlerRender(handler) {
+        //if i have multiple event for same dunctionality then i can doi this
+        [
+            'hashchange',
+            'load'
+        ].forEach((ev)=>window.addEventListener(ev, handler)
+        );
     }
     _generateMarkUpIngredient(ing) {
         return `<li class="recipe__ingredient">\n      <svg class="recipe__icon">\n        <use href="${_iconsSvgDefault.default}#icon-check"></use>\n      </svg>\n      <div class="recipe__quantity">${ing.quantity ? new _fractional.Fraction(ing.quantity).toString() : ''}</div>\n      <div class="recipe__description">\n        <span class="recipe__unit">${ing.unit}</span>\n        ${ing.description}\n      </div>\n    </li>`;

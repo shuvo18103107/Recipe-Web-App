@@ -30,7 +30,7 @@ const controlRecipes = async function () {
   }
 };
 
-//if i have multiple event for same dunctionality then i can doi this
-['hashchange', 'load'].forEach(ev =>
-  window.addEventListener(ev, controlRecipes)
-);
+const init = function () {
+  recipeView.adhandlerRender(controlRecipes)
+}
+init()
