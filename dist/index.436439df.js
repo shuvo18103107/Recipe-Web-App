@@ -482,6 +482,7 @@ const controlRecipes = async function() {
         console.log(err.message);
     }
 };
+//Event handlers technique in MVC using publisher subscriber design pattern
 const init = function() {
     _recipeViewDefault.default.adhandlerRender(controlRecipes);
 };
