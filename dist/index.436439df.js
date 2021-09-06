@@ -478,7 +478,8 @@ const controlRecipes = async function() {
         //2. rendering recipe
         _recipeViewDefault.default.render(_model.state.recipe);
     } catch (err) {
-        alert(err.message);
+        _recipeViewDefault.default.renderError();
+        // alert(err.message);
         console.log(err.message);
     }
 };
@@ -521,7 +522,8 @@ const loadRecipe = async function(id) {
         console.log(state.recipe);
     } catch (err) {
         //Temp Error Handling
-        console.error(`${err} 🚨🚨🚨`);
+        // console.error(`${err} 🚨🚨🚨`);
+        throw err;
     }
 };
 
@@ -1185,6 +1187,8 @@ console.log(_fractional.Fraction);
 class ReciepView {
     #data;
     #parentElement = document.querySelector('.recipe');
+    #errorMessage = 'We could not find that recipe.  Please try another one!';
+    #message = '';
     render(data) {
         this.#data = data;
         const markup = this._generatedMarkup();
@@ -1201,6 +1205,16 @@ class ReciepView {
     renderSpinner() {
         const markup = `<div class="spinner">\n        <svg>\n          <use href="${_iconsSvgDefault.default}#icon-loader"></use>\n        </svg>\n      </div>`;
         this.#parentElement.innerHTML = '';
+        this.#parentElement.insertAdjacentHTML('afterbegin', markup);
+    }
+    renderError(message = this.#errorMessage) {
+        const markup = `\n    <div class="error">\n    <div>\n      <svg>\n        <use href="${_iconsSvgDefault.default}#icon-alert-triangle"></use>\n      </svg>\n    </div>\n    <p>${message}</p>\n  </div>`;
+        this._clear();
+        this.#parentElement.insertAdjacentHTML('afterbegin', markup);
+    }
+    renderMessage(message = this.#message) {
+        const markup = `\n    <div class="message">\n    <div>\n      <svg>\n        <use href="${_iconsSvgDefault.default}#icon-smile"></use>\n      </svg>\n    </div>\n    <p>${message}</p>\n  </div>`;
+        this._clear();
         this.#parentElement.insertAdjacentHTML('afterbegin', markup);
     }
     //handling event in mvc architecture-> publisher
