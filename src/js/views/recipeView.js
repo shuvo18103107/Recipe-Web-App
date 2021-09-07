@@ -1,29 +1,21 @@
+import View from './View';
 // import icons from '../img/icons.svg' //parcel 1 style
 import icons from 'url:../../img/icons.svg'; //parcel 2 style
 import { Fraction } from 'fractional';
-console.log(Fraction);
-class ReciepView {
-  #data;
-  #parentElement = document.querySelector('.recipe');
-  #errorMessage = 'We could not find that recipe.  Please try another one!';
-  #message = '';
-  render(data) {
-    this.#data = data;
+import View from './View';
 
-    const markup = this.#generatedMarkup();
+class ReciepView extends View {
 
-    this._clear();
-    this.#parentElement.insertAdjacentHTML('afterbegin', markup);
-  }
-  _clear() {
-    this.#parentElement.innerHTML = '';
-  }
-  #generatedMarkup() {
+  _parentElement = document.querySelector('.recipe');
+  _errorMessage = 'We could not find that recipe.  Please try another one!';
+  _message = '';
+
+  _generatedMarkup() {
     return `<figure class="recipe__fig">
-        <img src="${this.#data.image}" alt="${this.#data.title
+        <img src="${this._data.image}" alt="${this._data.title
       }" crossorigin="anonymous" class="recipe__img"></img> 
         <h1 class="recipe__title">
-          <span>${this.#data.title}</span>
+          <span>${this._data.title}</span>
         </h1>
       </figure>
 
@@ -32,7 +24,7 @@ class ReciepView {
           <svg class="recipe__info-icon">
             <use href="${icons}#icon-clock"></use>
           </svg>
-          <span class="recipe__info-data recipe__info-data--minutes">${this.#data.cookingTime
+          <span class="recipe__info-data recipe__info-data--minutes">${this._data.cookingTime
       }</span>
           <span class="recipe__info-text">minutes</span>
         </div>
@@ -40,7 +32,7 @@ class ReciepView {
           <svg class="recipe__info-icon">
             <use href="${icons}#icon-users"></use>
           </svg>
-          <span class="recipe__info-data recipe__info-data--people">${this.#data.servings
+          <span class="recipe__info-data recipe__info-data--people">${this._data.servings
       }</span>
           <span class="recipe__info-text">servings</span>
 
@@ -59,9 +51,7 @@ class ReciepView {
         </div>
 
         <div class="recipe__user-generated">
-          <svg>
-            <use href="${icons}#icon-user"></use>
-          </svg>
+        
         </div>
         <button class="btn--round">
           <svg class="">
@@ -73,8 +63,8 @@ class ReciepView {
       <div class="recipe__ingredients">
         <h2 class="heading--2">Recipe ingredients</h2>
         <ul class="recipe__ingredient-list">
-        ${this.#data.ingredients
-        .map(ing => this.#generateMarkUpIngredient(ing))
+        ${this._data.ingredients
+        .map(ing => this._generateMarkUpIngredient(ing))
         .join('')}
 
         </ul>
@@ -84,13 +74,13 @@ class ReciepView {
         <h2 class="heading--2">How to cook it</h2>
         <p class="recipe__directions-text">
           This recipe was carefully designed and tested by
-          <span class="recipe__publisher">${this.#data.publisher
+          <span class="recipe__publisher">${this._data.publisher
       }</span>. Please check out
           directions at their website.
         </p>
         <a
           class="btn--small recipe__btn"
-          href="${this.#data.sourceUrl}"
+          href="${this._data.sourceUrl}"
           target="_blank"
         >
           <span>Directions</span>
@@ -99,43 +89,6 @@ class ReciepView {
           </svg>
         </a>
       </div>`;
-  }
-  renderSpinner() {
-    const markup = `<div class="spinner">
-        <svg>
-          <use href="${icons}#icon-loader"></use>
-        </svg>
-      </div>`;
-    this.#parentElement.innerHTML = '';
-    this.#parentElement.insertAdjacentHTML('afterbegin', markup);
-  }
-  renderError(message = this.#errorMessage) {
-    const markup = `
-    <div class="error">
-    <div>
-      <svg>
-        <use href="${icons}#icon-alert-triangle"></use>
-      </svg>
-    </div>
-    <p>${message}</p>
-  </div>`
-    this._clear();
-    this.#parentElement.insertAdjacentHTML('afterbegin', markup)
-
-  }
-  renderMessage(message = this.#message) {
-    const markup = `
-    <div class="message">
-    <div>
-      <svg>
-        <use href="${icons}#icon-smile"></use>
-      </svg>
-    </div>
-    <p>${message}</p>
-  </div>`
-    this._clear();
-    this.#parentElement.insertAdjacentHTML('afterbegin', markup)
-
   }
   //handling event in mvc architecture-> publisher
   adhandlerRender(handler) {
@@ -149,7 +102,7 @@ class ReciepView {
 
 
 
-  #generateMarkUpIngredient(ing) {
+  _generateMarkUpIngredient(ing) {
     return `<li class="recipe__ingredient">
       <svg class="recipe__icon">
         <use href="${icons}#icon-check"></use>

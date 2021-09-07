@@ -1,6 +1,7 @@
 import * as model from './model';
 import recipeView from './views/recipeView';
 import searchView from './views/searchView';
+import resultView from './views/resultView';
 
 //import assets so that parcel can get it
 
@@ -10,13 +11,17 @@ import 'core-js/stable';
 //this one polyfilling asybc await and updated all js feature to old browsers
 import 'regenerator-runtime/runtime';
 import searchView from './views/searchView';
+// //parcel hot reload
+// if (module.hot) {
+//   module.hot.accept();
+// }
 const controlRecipes = async function () {
   try {
     const id = window.location.hash.slice(1);
     console.log(id);
     if (!id) return;
     recipeView.renderSpinner();
-
+    console.log(recipeView);
     //1.loading recipe
     await model.loadRecipe(id);
     //as we call a async function that returns a promise so we have to await if we declare any async function
@@ -32,17 +37,24 @@ const controlRecipes = async function () {
 
 const controlSearchResults = async function () {
   try {
+    //render spinner
+    resultView.renderSpinner();
+
     //get search query
     const query = searchView.getQuery()
     if (!query) return;
+
+
     // load search results
     await model.loadSearchResult(query)
     //render results
-    console.log(model.state.search.results);
 
+    //render resultView
+    resultView.render(model.getSearchResultPage())
+    console.log(resultView);
   }
   catch (err) {
-    console.log(err);
+    resultView.renderError()
   }
 }
 //Event handlers technique in MVC using publisher subscriber design pattern
