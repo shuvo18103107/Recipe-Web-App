@@ -2,11 +2,13 @@ import icons from 'url:../../img/icons.svg'; //parcel 2 style
 export default class View {
   _data;
   render(data) {
+    console.log(data);
     //object pass korar time e kono element fetch na hoile ei guard class trigger korbe
     if (!data || (Array.isArray(data) && data.length === 0))
       return this.renderError();
-    this._data = data;
 
+    this._data = data;
+    console.log(this._data);
     const markup = this._generatedMarkup();
 
     this.clear();

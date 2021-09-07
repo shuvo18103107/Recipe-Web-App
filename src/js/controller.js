@@ -11,6 +11,7 @@ import 'core-js/stable';
 //this one polyfilling asybc await and updated all js feature to old browsers
 import 'regenerator-runtime/runtime';
 import searchView from './views/searchView';
+import paginationView from './views/paginationView';
 // //parcel hot reload
 // if (module.hot) {
 //   module.hot.accept();
@@ -51,15 +52,29 @@ const controlSearchResults = async function () {
 
     //render resultView
     resultView.render(model.getSearchResultPage())
-    console.log(resultView);
+    //render initial pagination
+
+    paginationView.render(model.state.search)
   }
   catch (err) {
     resultView.renderError()
   }
 }
+
+const controlPagination = function (gotoPage) {
+  //render resultView
+  resultView.render(model.getSearchResultPage(gotoPage))
+  //render initial pagination
+
+  paginationView.render(model.state.search)
+
+}
+
 //Event handlers technique in MVC using publisher subscriber design pattern
 const init = function () {
   recipeView.adhandlerRender(controlRecipes);
-  searchView.adhandlerSearch(controlSearchResults)
+  searchView.adhandlerSearch(controlSearchResults);
+  paginationView.adhandlerClick(controlPagination)
+
 }
 init()

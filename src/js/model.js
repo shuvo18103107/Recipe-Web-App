@@ -9,9 +9,8 @@ export const state = {
         query: '',
         results: [],
         page: 1,
-        resultPerPage: RES_PER_PAGE
+        resultPerPage: RES_PER_PAGE,
     },
-
 };
 
 export const loadRecipe = async function (id) {
@@ -52,7 +51,6 @@ export const loadSearchResult = async function (query) {
                 title: ing.title,
             };
         });
-
     } catch (err) {
         throw err;
     }
@@ -62,5 +60,5 @@ export const getSearchResultPage = function (page = state.search.page) {
     state.search.page = page;
     const start = (page - 1) * state.search.resultPerPage;
     const end = page * state.search.resultPerPage;
-    return state.search.results.slice(start, end)
-}
+    return state.search.results.slice(start, end);
+};
