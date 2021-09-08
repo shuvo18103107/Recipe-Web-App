@@ -29,6 +29,7 @@ const controlRecipes = async function () {
 
     //2. rendering recipe
     recipeView.render(model.state.recipe);
+
   } catch (err) {
     recipeView.renderError()
     // alert(err.message);
@@ -70,11 +71,23 @@ const controlPagination = function (gotoPage) {
 
 }
 
+const controlServings = function (newServing) {
+  //update the recipe serving in state
+
+  model.updateServings(newServing)
+  recipeView.render(model.state.recipe);
+
+
+  //update the view
+}
 //Event handlers technique in MVC using publisher subscriber design pattern
 const init = function () {
   recipeView.adhandlerRender(controlRecipes);
+  recipeView.adhandlerUpdateServings(controlServings);
+  //ekhane call dile undefined hobe cg ekhono api theke data ase nai 
+  // controlServings()
   searchView.adhandlerSearch(controlSearchResults);
-  paginationView.adhandlerClick(controlPagination)
+  paginationView.adhandlerClick(controlPagination);
 
 }
 init()
