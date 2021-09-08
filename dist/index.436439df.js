@@ -481,6 +481,8 @@ const controlRecipes = async function() {
         console.log(id);
         if (!id) return;
         _recipeViewDefault.default.renderSpinner();
+        //update result view to mark selected search results
+        _resultViewDefault.default.update(_model.getSearchResultPage());
         console.log(_recipeViewDefault.default);
         //1.loading recipe
         await _model.loadRecipe(id);
@@ -518,16 +520,17 @@ const controlPagination = function(gotoPage) {
     _paginationViewDefault.default.render(_model.state.search);
 };
 const controlServings = function(newServing) {
-    //update the recipe serving in state
     _model.updateServings(newServing);
-    _recipeViewDefault.default.render(_model.state.recipe);
+    // recipeView.render(model.state.recipe);
+    //update the recipe serving in state
+    _recipeViewDefault.default.update(_model.state.recipe);
 //update the view
 };
 //Event handlers technique in MVC using publisher subscriber design pattern
 const init = function() {
     _recipeViewDefault.default.adhandlerRender(controlRecipes);
     _recipeViewDefault.default.adhandlerUpdateServings(controlServings);
-    //ekhane call dile undefined hobe cg ekhono api theke data ase nai 
+    //ekhane call dile undefined hobe cg ekhono api theke data ase nai
     // controlServings()
     _searchViewDefault.default.adhandlerSearch(controlSearchResults);
     _paginationViewDefault.default.adhandlerClick(controlPagination);
@@ -1330,6 +1333,47 @@ class View {
         this.clear();
         this._parentElement.insertAdjacentHTML('afterbegin', markup);
     }
+    update(data) {
+        //error load event e trigger kore so lage na
+        // if (!data || (Array.isArray(data) && data.length === 0))
+        //   return this.renderError();
+        this._data = data;
+        // console.log(this._data);
+        const newMarkup = this._generatedMarkup();
+        //here we get a strung in newmarkup , but i want to compare the old html string to new , so this newmarkup string i will convert to real dom node object
+        const newDOM = document.createRange().createContextualFragment(newMarkup);
+        //here newDom is now become a virtual dom which lives in our memoty not in page
+        //this dom is now updated object dom but we cannot render it on page we want to compare the page dom and our current virtual updated dom
+        //now convert this nodeList to in an array
+        const newElements = Array.from(newDOM.querySelectorAll('*'));
+        // console.log(newElements);
+        // select the current page dom
+        const curElement = Array.from(this._parentElement.querySelectorAll('*'));
+        // console.log(curElement);
+        newElements.forEach((newEl, i)=>{
+            //looping two arrays at the same time technique
+            const curEl = curElement[i];
+            //now have to compare
+            // console.log(curEl);
+            //new element is just a elemnt but we need text so go firstchild it will return a text node and if it is text then take the valu using nodeValue, and this text should not be empty
+            // console.log(newEl.firstChild);
+            // console.log(curEl, newEl, newEl.isEqualNode(curEl));
+            //update changes text
+            if (!newEl.isEqualNode(curEl) && newEl.firstChild?.nodeValue.trim() != '') // console.log('💥', newEl.firstChild?.nodeValue.trim());
+            //now thos are unmatch we have to find out those tag
+            curEl.textContent = newEl.textContent;
+            //update changes attributes
+            if (!newEl.isEqualNode(curEl)) {
+                console.log(newEl, [
+                    newEl.attributes
+                ]);
+                Array.from(newEl.attributes).forEach((att)=>{
+                    //we change all the current element attribute by the new element attribute
+                    curEl.setAttribute(att.name, att.value);
+                });
+            }
+        });
+    }
     clear() {
         this._parentElement.innerHTML = '';
     }
@@ -1676,13 +1720,14 @@ var _iconsSvgDefault = parcelHelpers.interopDefault(_iconsSvg);
 class ResultView extends _viewDefault.default {
     _parentElement = document.querySelector('.results');
     _errorMessage = 'No recipes found for your query! Please try again 😥';
-    _message = "";
+    _message = '';
     _generatedMarkup() {
         return this._data.map((item)=>this._generatedItem(item)
         ).join('');
     }
     _generatedItem(item) {
-        return `<li class="preview">\n       <a class="preview__link " href="#${item.id}">\n         <figure class="preview__fig">\n           <img src="${item.image}" alt="${item.title}" crossorigin="anonymous" />\n         </figure>\n         <div class="preview__data">\n           <h4 class="preview__title">${item.title}</h4>\n           <p class="preview__publisher">${item.publisher}</p>\n           \n         </div>\n       </a>\n       </li>`;
+        const id = window.location.hash.slice(1);
+        return `<li class="preview">\n       <a class="preview__link ${item.id === id ? `preview__link--active` : ''} " href="#${item.id}">\n         <figure class="preview__fig">\n           <img src="${item.image}" alt="${item.title}" crossorigin="anonymous" />\n         </figure>\n         <div class="preview__data">\n           <h4 class="preview__title">${item.title}</h4>\n           <p class="preview__publisher">${item.publisher}</p>\n           \n         </div>\n       </a>\n       </li>`;
     }
 }
 exports.default = new ResultView();

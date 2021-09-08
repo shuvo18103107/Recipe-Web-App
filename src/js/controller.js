@@ -22,6 +22,8 @@ const controlRecipes = async function () {
     console.log(id);
     if (!id) return;
     recipeView.renderSpinner();
+    //update result view to mark selected search results
+    resultView.update(model.getSearchResultPage());
     console.log(recipeView);
     //1.loading recipe
     await model.loadRecipe(id);
@@ -29,9 +31,8 @@ const controlRecipes = async function () {
 
     //2. rendering recipe
     recipeView.render(model.state.recipe);
-
   } catch (err) {
-    recipeView.renderError()
+    recipeView.renderError();
     // alert(err.message);
     console.log(err.message);
   }
@@ -43,51 +44,46 @@ const controlSearchResults = async function () {
     resultView.renderSpinner();
 
     //get search query
-    const query = searchView.getQuery()
+    const query = searchView.getQuery();
     if (!query) return;
 
-
     // load search results
-    await model.loadSearchResult(query)
+    await model.loadSearchResult(query);
     //render results
 
     //render resultView
-    resultView.render(model.getSearchResultPage())
+    resultView.render(model.getSearchResultPage());
     //render initial pagination
 
-    paginationView.render(model.state.search)
+    paginationView.render(model.state.search);
+  } catch (err) {
+    resultView.renderError();
   }
-  catch (err) {
-    resultView.renderError()
-  }
-}
+};
 
 const controlPagination = function (gotoPage) {
   //render resultView
-  resultView.render(model.getSearchResultPage(gotoPage))
+  resultView.render(model.getSearchResultPage(gotoPage));
   //render initial pagination
 
-  paginationView.render(model.state.search)
-
-}
+  paginationView.render(model.state.search);
+};
 
 const controlServings = function (newServing) {
+  model.updateServings(newServing);
+  // recipeView.render(model.state.recipe);
   //update the recipe serving in state
-
-  model.updateServings(newServing)
-  recipeView.render(model.state.recipe);
-
+  recipeView.update(model.state.recipe);
 
   //update the view
-}
+};
 //Event handlers technique in MVC using publisher subscriber design pattern
 const init = function () {
   recipeView.adhandlerRender(controlRecipes);
   recipeView.adhandlerUpdateServings(controlServings);
-  //ekhane call dile undefined hobe cg ekhono api theke data ase nai 
+  //ekhane call dile undefined hobe cg ekhono api theke data ase nai
   // controlServings()
   searchView.adhandlerSearch(controlSearchResults);
   paginationView.adhandlerClick(controlPagination);
-
-}
-init()
+};
+init();
