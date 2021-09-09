@@ -486,9 +486,7 @@ const controlRecipes = async function() {
         console.log(_recipeViewDefault.default);
         //1.loading recipe
         await _model.loadRecipe(id);
-        //as we call a async function that returns a promise so we have to await if we declare any async function
-        //2. rendering recipe
-        _recipeViewDefault.default.render(_model.state.recipe);
+    // console.log(model.state.bookMarks);
     } catch (err) {
         _recipeViewDefault.default.renderError();
         // alert(err.message);
@@ -526,10 +524,18 @@ const controlServings = function(newServing) {
     _recipeViewDefault.default.update(_model.state.recipe);
 //update the view
 };
+const controlAddBookmarks = function() {
+    if (!_model.state.recipe.bookMarked) _model.adBookMark(_model.state.recipe);
+    else _model.deleteBookMark(_model.state.recipe.id);
+    // console.log(model.state.recipe);
+    // console.log(model.state);
+    _recipeViewDefault.default.update(_model.state.recipe);
+};
 //Event handlers technique in MVC using publisher subscriber design pattern
 const init = function() {
     _recipeViewDefault.default.adhandlerRender(controlRecipes);
     _recipeViewDefault.default.adhandlerUpdateServings(controlServings);
+    _recipeViewDefault.default.addHandlerAddBookmark(controlAddBookmarks);
     //ekhane call dile undefined hobe cg ekhono api theke data ase nai
     // controlServings()
     _searchViewDefault.default.adhandlerSearch(controlSearchResults);
@@ -550,6 +556,10 @@ parcelHelpers.export(exports, "getSearchResultPage", ()=>getSearchResultPage
 );
 parcelHelpers.export(exports, "updateServings", ()=>updateServings
 );
+parcelHelpers.export(exports, "adBookMark", ()=>adBookMark
+);
+parcelHelpers.export(exports, "deleteBookMark", ()=>deleteBookMark
+);
 var _regeneratorRuntime = require("regenerator-runtime");
 var _config = require("./config");
 var _helpers = require("./helpers");
@@ -561,7 +571,8 @@ const state = {
         results: [],
         page: 1,
         resultPerPage: _config.RES_PER_PAGE
-    }
+    },
+    bookMarks: []
 };
 const loadRecipe = async function(id) {
     try {
@@ -579,6 +590,10 @@ const loadRecipe = async function(id) {
             cookingTime: recipe.cooking_time,
             ingredients: recipe.ingredients
         };
+        //click korar por load hole to bookmark thake na new object set hoi tai jate bookmark identify kora jai tai array te check diye true kore dibo
+        if (state.bookMarks.some((bookmark)=>bookmark.id === id
+        )) state.recipe.bookMarked = true;
+        else state.recipe.bookMarked = false;
         console.log(state.recipe);
     } catch (err) {
         //Temp Error Handling
@@ -599,6 +614,7 @@ const loadSearchResult = async function(query) {
                 title: ing.title
             };
         });
+        state.search.page = 1;
     } catch (err) {
         throw err;
     }
@@ -615,6 +631,20 @@ const updateServings = function(newServings) {
         ing.quantity = ing.quantity * newServings / state.recipe.servings;
     });
     state.recipe.servings = newServings;
+};
+const adBookMark = function(recipe) {
+    //Add recipe object - adding bookmark
+    state.bookMarks.push(recipe);
+    //Mark current recipe as bookmark
+    if (recipe.id === state.recipe.id) state.recipe.bookMarked = true;
+};
+const deleteBookMark = function(id) {
+    //delete bookmark
+    const index = state.bookMarks.findIndex((el)=>el.id === id
+    );
+    state.bookMarks.splice(index, 1);
+    //Mark current recipe as not bookmarked
+    if (id === state.recipe.id) state.recipe.bookMarked = false;
 };
 
 },{"regenerator-runtime":"cH8Iq","./config":"beA2m","./helpers":"9l3Yy","@parcel/transformer-js/src/esmodule-helpers.js":"JacNc"}],"cH8Iq":[function(require,module,exports) {
@@ -1289,7 +1319,7 @@ class ReciepView extends _viewDefault.default {
     _errorMessage = 'We could not find that recipe.  Please try another one!';
     _message = '';
     _generatedMarkup() {
-        return `<figure class="recipe__fig">\n        <img src="${this._data.image}" alt="${this._data.title}" crossorigin="anonymous" class="recipe__img"></img> \n        <h1 class="recipe__title">\n          <span>${this._data.title}</span>\n        </h1>\n      </figure>\n\n      <div class="recipe__details">\n        <div class="recipe__info">\n          <svg class="recipe__info-icon">\n            <use href="${_iconsSvgDefault.default}#icon-clock"></use>\n          </svg>\n          <span class="recipe__info-data recipe__info-data--minutes">${this._data.cookingTime}</span>\n          <span class="recipe__info-text">minutes</span>\n        </div>\n        <div class="recipe__info">\n          <svg class="recipe__info-icon">\n            <use href="${_iconsSvgDefault.default}#icon-users"></use>\n          </svg>\n          <span class="recipe__info-data recipe__info-data--people">${this._data.servings}</span>\n          <span class="recipe__info-text">servings</span>\n\n          <div class="recipe__info-buttons">\n            <button data-update-to="${this._data.servings - 1}" class="btn--tiny btn--update-servings">\n              <svg>\n                <use href="${_iconsSvgDefault.default}#icon-minus-circle"></use>\n              </svg>\n            </button>\n            <button data-update-to="${this._data.servings + 1}" class="btn--tiny btn--update-servings">\n              <svg>\n                <use href="${_iconsSvgDefault.default}#icon-plus-circle"></use>\n              </svg>\n            </button>\n          </div>\n        </div>\n\n        <div class="recipe__user-generated">\n        \n        </div>\n        <button class="btn--round">\n          <svg class="">\n            <use href="${_iconsSvgDefault.default}#icon-bookmark-fill"></use>\n          </svg>\n        </button>\n      </div>\n\n      <div class="recipe__ingredients">\n        <h2 class="heading--2">Recipe ingredients</h2>\n        <ul class="recipe__ingredient-list">\n        ${this._data.ingredients.map((ing)=>this._generateMarkUpIngredient(ing)
+        return `<figure class="recipe__fig">\n        <img src="${this._data.image}" alt="${this._data.title}" crossorigin="anonymous" class="recipe__img"></img> \n        <h1 class="recipe__title">\n          <span>${this._data.title}</span>\n        </h1>\n      </figure>\n\n      <div class="recipe__details">\n        <div class="recipe__info">\n          <svg class="recipe__info-icon">\n            <use href="${_iconsSvgDefault.default}#icon-clock"></use>\n          </svg>\n          <span class="recipe__info-data recipe__info-data--minutes">${this._data.cookingTime}</span>\n          <span class="recipe__info-text">minutes</span>\n        </div>\n        <div class="recipe__info">\n          <svg class="recipe__info-icon">\n            <use href="${_iconsSvgDefault.default}#icon-users"></use>\n          </svg>\n          <span class="recipe__info-data recipe__info-data--people">${this._data.servings}</span>\n          <span class="recipe__info-text">servings</span>\n\n          <div class="recipe__info-buttons">\n            <button data-update-to="${this._data.servings - 1}" class="btn--tiny btn--update-servings">\n              <svg>\n                <use href="${_iconsSvgDefault.default}#icon-minus-circle"></use>\n              </svg>\n            </button>\n            <button data-update-to="${this._data.servings + 1}" class="btn--tiny btn--update-servings">\n              <svg>\n                <use href="${_iconsSvgDefault.default}#icon-plus-circle"></use>\n              </svg>\n            </button>\n          </div>\n        </div>\n\n        <div class="recipe__user-generated">\n        \n        </div>\n        <button class="btn--round btn--bookmark">\n          <svg class="">\n            <use href="${_iconsSvgDefault.default}#icon-bookmark${this._data.bookMarked ? '-fill' : ''}"></use>\n          </svg>\n        </button>\n      </div>\n\n      <div class="recipe__ingredients">\n        <h2 class="heading--2">Recipe ingredients</h2>\n        <ul class="recipe__ingredient-list">\n        ${this._data.ingredients.map((ing)=>this._generateMarkUpIngredient(ing)
         ).join('')}\n\n        </ul>\n      </div>\n\n      <div class="recipe__directions">\n        <h2 class="heading--2">How to cook it</h2>\n        <p class="recipe__directions-text">\n          This recipe was carefully designed and tested by\n          <span class="recipe__publisher">${this._data.publisher}</span>. Please check out\n          directions at their website.\n        </p>\n        <a\n          class="btn--small recipe__btn"\n          href="${this._data.sourceUrl}"\n          target="_blank"\n        >\n          <span>Directions</span>\n          <svg class="search__icon">\n            <use href="${_iconsSvgDefault.default}#icon-arrow-right"></use>\n          </svg>\n        </a>\n      </div>`;
     }
     //handling event in mvc architecture-> publisher
@@ -1312,6 +1342,13 @@ class ReciepView extends _viewDefault.default {
     }
     _generateMarkUpIngredient(ing) {
         return `<li class="recipe__ingredient">\n      <svg class="recipe__icon">\n        <use href="${_iconsSvgDefault.default}#icon-check"></use>\n      </svg>\n      <div class="recipe__quantity">${ing.quantity ? new _fractional.Fraction(ing.quantity).toString() : ''}</div>\n      <div class="recipe__description">\n        <span class="recipe__unit">${ing.unit}</span>\n        ${ing.description}\n      </div>\n    </li>`;
+    }
+    addHandlerAddBookmark(handler) {
+        this._parentElement.addEventListener('click', function(e) {
+            const btn = e.target.closest('.btn--bookmark');
+            if (!btn) return;
+            handler();
+        });
     }
 }
 exports.default = new ReciepView();

@@ -30,7 +30,8 @@ const controlRecipes = async function () {
     //as we call a async function that returns a promise so we have to await if we declare any async function
 
     //2. rendering recipe
-    recipeView.render(model.state.recipe);
+    recipeVie
+    // console.log(model.state.bookMarks);
   } catch (err) {
     recipeView.renderError();
     // alert(err.message);
@@ -77,10 +78,21 @@ const controlServings = function (newServing) {
 
   //update the view
 };
+
+const controlAddBookmarks = function () {
+  if (!model.state.recipe.bookMarked)
+    model.adBookMark(model.state.recipe);
+  else model.deleteBookMark(model.state.recipe.id)
+  // console.log(model.state.recipe);
+  // console.log(model.state);
+  recipeView.update(model.state.recipe);
+
+}
 //Event handlers technique in MVC using publisher subscriber design pattern
 const init = function () {
   recipeView.adhandlerRender(controlRecipes);
   recipeView.adhandlerUpdateServings(controlServings);
+  recipeView.addHandlerAddBookmark(controlAddBookmarks);
   //ekhane call dile undefined hobe cg ekhono api theke data ase nai
   // controlServings()
   searchView.adhandlerSearch(controlSearchResults);
