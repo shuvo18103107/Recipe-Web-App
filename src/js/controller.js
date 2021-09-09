@@ -12,6 +12,8 @@ import 'core-js/stable';
 import 'regenerator-runtime/runtime';
 import searchView from './views/searchView';
 import paginationView from './views/paginationView';
+
+import bookmarkView from './views/bookmarkView';
 // //parcel hot reload
 // if (module.hot) {
 //   module.hot.accept();
@@ -22,15 +24,18 @@ const controlRecipes = async function () {
     console.log(id);
     if (!id) return;
     recipeView.renderSpinner();
-    //update result view to mark selected search results
+    //update result view to mark selected search results- cg url change hole oi url er id er sathe current je object milbe setai markk thakbe
     resultView.update(model.getSearchResultPage());
+
+    //update bookmarked for marker - cg url change hoile bookmark array er vitor loop chalaia je object er id er sathe url milbe setai marker dibo
+    bookmarkView.update(model.state.bookMarks);
     console.log(recipeView);
     //1.loading recipe
     await model.loadRecipe(id);
     //as we call a async function that returns a promise so we have to await if we declare any async function
 
     //2. rendering recipe
-    recipeVie
+    recipeView.render(model.state.recipe);
     // console.log(model.state.bookMarks);
   } catch (err) {
     recipeView.renderError();
@@ -46,6 +51,7 @@ const controlSearchResults = async function () {
 
     //get search query
     const query = searchView.getQuery();
+
     if (!query) return;
 
     // load search results
@@ -80,14 +86,16 @@ const controlServings = function (newServing) {
 };
 
 const controlAddBookmarks = function () {
-  if (!model.state.recipe.bookMarked)
+  if (!model.state.recipe.bookMarked) {
     model.adBookMark(model.state.recipe);
-  else model.deleteBookMark(model.state.recipe.id)
+  } else {
+    model.deleteBookMark(model.state.recipe.id);
+  }
   // console.log(model.state.recipe);
   // console.log(model.state);
   recipeView.update(model.state.recipe);
-
-}
+  bookmarkView.render(model.state.bookMarks);
+};
 //Event handlers technique in MVC using publisher subscriber design pattern
 const init = function () {
   recipeView.adhandlerRender(controlRecipes);

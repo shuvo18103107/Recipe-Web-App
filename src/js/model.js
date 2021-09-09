@@ -98,5 +98,4 @@ export const deleteBookMark = function (id) {
     if (id === state.recipe.id) {
         state.recipe.bookMarked = false;
     }
-
-}
+};

@@ -1,8 +1,7 @@
 import icons from 'url:../../img/icons.svg'; //parcel 2 style
 export default class View {
   _data;
-  render(data) {
-    console.log(data);
+  render(data, render = true) {
     //object pass korar time e kono element fetch na hoile ei guard class trigger korbe
     if (!data || (Array.isArray(data) && data.length === 0))
       return this.renderError();
@@ -11,7 +10,9 @@ export default class View {
     console.log(this._data);
     const markup = this._generatedMarkup();
 
+    if (!render) return markup;
     this.clear();
+
     this._parentElement.insertAdjacentHTML('afterbegin', markup);
   }
   update(data) {
