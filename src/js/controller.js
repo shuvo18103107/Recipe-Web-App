@@ -24,10 +24,11 @@ const controlRecipes = async function () {
     console.log(id);
     if (!id) return;
     recipeView.renderSpinner();
-    //update result view to mark selected search results- cg url change hole oi url er id er sathe current je object milbe setai markk thakbe
-    resultView.update(model.getSearchResultPage());
 
     //update bookmarked for marker - cg url change hoile bookmark array er vitor loop chalaia je object er id er sathe url milbe setai marker dibo
+    //update result view to mark selected search results- cg url change hole oi url er id er sathe current je object milbe setai markk thakbe
+    resultView.update(model.getSearchResultPage());
+    //update current dom er sathe compare kore dom update kore kintu current bookmarkview render hoi nai tai update kaj korbe na so age bookmark render korate hobe first e 
     bookmarkView.update(model.state.bookMarks);
     console.log(recipeView);
     //1.loading recipe
@@ -96,8 +97,15 @@ const controlAddBookmarks = function () {
   recipeView.update(model.state.recipe);
   bookmarkView.render(model.state.bookMarks);
 };
+
+const controlBookMarks = function () {
+  //load howar sathe sathe amra localstorage theke data to paici agei thn oita render korbo jate update erpr call korle compare korte pare
+  bookmarkView.render(model.state.bookMarks)
+}
 //Event handlers technique in MVC using publisher subscriber design pattern
 const init = function () {
+
+  bookmarkView.adhandleBookMark(controlBookMarks)
   recipeView.adhandlerRender(controlRecipes);
   recipeView.adhandlerUpdateServings(controlServings);
   recipeView.addHandlerAddBookmark(controlAddBookmarks);
@@ -107,3 +115,4 @@ const init = function () {
   paginationView.adhandlerClick(controlPagination);
 };
 init();
+

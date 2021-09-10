@@ -483,9 +483,10 @@ const controlRecipes = async function() {
         console.log(id);
         if (!id) return;
         _recipeViewDefault.default.renderSpinner();
+        //update bookmarked for marker - cg url change hoile bookmark array er vitor loop chalaia je object er id er sathe url milbe setai marker dibo
         //update result view to mark selected search results- cg url change hole oi url er id er sathe current je object milbe setai markk thakbe
         _resultViewDefault.default.update(_model.getSearchResultPage());
-        //update bookmarked for marker - cg url change hoile bookmark array er vitor loop chalaia je object er id er sathe url milbe setai marker dibo
+        //update current dom er sathe compare kore dom update kore kintu current bookmarkview render hoi nai tai update kaj korbe na so age bookmark render korate hobe first e 
         _bookmarkViewDefault.default.update(_model.state.bookMarks);
         console.log(_recipeViewDefault.default);
         //1.loading recipe
@@ -539,8 +540,13 @@ const controlAddBookmarks = function() {
     _recipeViewDefault.default.update(_model.state.recipe);
     _bookmarkViewDefault.default.render(_model.state.bookMarks);
 };
+const controlBookMarks = function() {
+    //load howar sathe sathe amra localstorage theke data to paici agei thn oita render korbo jate update erpr call korle compare korte pare
+    _bookmarkViewDefault.default.render(_model.state.bookMarks);
+};
 //Event handlers technique in MVC using publisher subscriber design pattern
 const init = function() {
+    _bookmarkViewDefault.default.adhandleBookMark(controlBookMarks);
     _recipeViewDefault.default.adhandlerRender(controlRecipes);
     _recipeViewDefault.default.adhandlerUpdateServings(controlServings);
     _recipeViewDefault.default.addHandlerAddBookmark(controlAddBookmarks);
@@ -640,11 +646,17 @@ const updateServings = function(newServings) {
     });
     state.recipe.servings = newServings;
 };
+const persistBookMark = function() {
+    localStorage.setItem('bookmarks', JSON.stringify(state.bookMarks));
+};
 const adBookMark = function(recipe) {
     //Add recipe object - adding bookmark
     state.bookMarks.push(recipe);
     //Mark current recipe as bookmark
-    if (recipe.id === state.recipe.id) state.recipe.bookMarked = true;
+    if (recipe.id === state.recipe.id) {
+        state.recipe.bookMarked = true;
+        persistBookMark();
+    }
 };
 const deleteBookMark = function(id) {
     //delete bookmark
@@ -652,8 +664,21 @@ const deleteBookMark = function(id) {
     );
     state.bookMarks.splice(index, 1);
     //Mark current recipe as not bookmarked
-    if (id === state.recipe.id) state.recipe.bookMarked = false;
+    if (id === state.recipe.id) {
+        //false r true ta view render e help kore
+        state.recipe.bookMarked = false;
+        persistBookMark();
+    }
 };
+const init = function() {
+    const storage = localStorage.getItem('bookmarks');
+    if (storage) state.bookMarks = JSON.parse(storage);
+};
+init(); //clear all bookmarks for developing purpous 
+ // const clearBookMarks = function () {
+ //     localStorage.clear('bookmarks')
+ // }
+ // clearBookMarks();
 
 },{"regenerator-runtime":"cH8Iq","./config":"beA2m","./helpers":"9l3Yy","@parcel/transformer-js/src/esmodule-helpers.js":"JacNc"}],"cH8Iq":[function(require,module,exports) {
 /**
@@ -1775,7 +1800,7 @@ class ResultView extends _viewDefault.default {
 }
 exports.default = new ResultView();
 
-},{"./View":"8rtS4","url:../../img/icons.svg":"iwCpK","@parcel/transformer-js/src/esmodule-helpers.js":"JacNc","./previewView":"knRyY"}],"knRyY":[function(require,module,exports) {
+},{"./View":"8rtS4","./previewView":"knRyY","url:../../img/icons.svg":"iwCpK","@parcel/transformer-js/src/esmodule-helpers.js":"JacNc"}],"knRyY":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _view = require("./View");
@@ -13636,9 +13661,12 @@ class BookmarkView extends _viewDefault.default {
         return this._data.map((bookmarkObj)=>_previewViewDefault.default.render(bookmarkObj, false)
         ).join('');
     }
+    adhandleBookMark(handler) {
+        window.addEventListener('load', handler());
+    }
 }
 exports.default = new BookmarkView();
 
-},{"./View":"8rtS4","@parcel/transformer-js/src/esmodule-helpers.js":"JacNc","./previewView":"knRyY","url:../../img/icons.svg":"iwCpK"}]},["drOo7","jKMjS"], "jKMjS", "parcelRequire041d")
+},{"./View":"8rtS4","./previewView":"knRyY","url:../../img/icons.svg":"iwCpK","@parcel/transformer-js/src/esmodule-helpers.js":"JacNc"}]},["drOo7","jKMjS"], "jKMjS", "parcelRequire041d")
 
 //# sourceMappingURL=index.436439df.js.map
