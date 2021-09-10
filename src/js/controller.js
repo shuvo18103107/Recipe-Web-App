@@ -14,6 +14,7 @@ import searchView from './views/searchView';
 import paginationView from './views/paginationView';
 
 import bookmarkView from './views/bookmarkView';
+import addRecipeView from './views/addRecipeView';
 // //parcel hot reload
 // if (module.hot) {
 //   module.hot.accept();
@@ -49,7 +50,6 @@ const controlSearchResults = async function () {
   try {
     //render spinner
     resultView.renderSpinner();
-
     //get search query
     const query = searchView.getQuery();
 
@@ -102,6 +102,10 @@ const controlBookMarks = function () {
   //load howar sathe sathe amra localstorage theke data to paici agei thn oita render korbo jate update erpr call korle compare korte pare
   bookmarkView.render(model.state.bookMarks)
 }
+const controlAddRecipe = function (newRecipe) {
+  console.log(newRecipe);
+  //upload the new recipe data
+}
 //Event handlers technique in MVC using publisher subscriber design pattern
 const init = function () {
 
@@ -113,6 +117,7 @@ const init = function () {
   // controlServings()
   searchView.adhandlerSearch(controlSearchResults);
   paginationView.adhandlerClick(controlPagination);
+  addRecipeView.adhandlerUpload(controlAddRecipe)
 };
 init();
 
