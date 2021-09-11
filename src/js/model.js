@@ -1,7 +1,7 @@
 import { async } from 'regenerator-runtime';
 import { API_URL, END, KEY, RES_PER_PAGE, START } from './config';
-import { getJson, sendJson } from './helpers';
-import { getJson } from './helpers';
+// import { getJson, sendJson } from './helpers';
+import { AJAX } from './helpers';
 
 export const state = {
     recipe: {},
@@ -33,7 +33,7 @@ const createRecipeObject = function (data) { //recipe object property change and
 }
 export const loadRecipe = async function (id) {
     try {
-        const data = await getJson(`${API_URL}/${id}`);
+        const data = await AJAX(`${API_URL}/${id}?key=${KEY}`);
 
         state.recipe = createRecipeObject(data);
 
@@ -54,7 +54,8 @@ export const loadRecipe = async function (id) {
 export const loadSearchResult = async function (query) {
     try {
         state.search.query = query;
-        const data = await getJson(`${API_URL}?search=${query}`);
+        //using key in query loadd the result including our own key 
+        const data = await AJAX(`${API_URL}?search=${query}&key=${KEY}`);
         // console.log(data);
         state.search.results = data.data.recipes.map(ing => {
             return {
@@ -62,6 +63,8 @@ export const loadSearchResult = async function (query) {
                 image: ing.image_url,
                 publisher: ing.publisher,
                 title: ing.title,
+                //result objects gula amader key sohoi fetch hoi tai key thakle proprty te add korbo na thakle na
+                ...(ing.key && { key: ing.key })
             };
         });
 
@@ -133,7 +136,7 @@ export const uploadRecipe = async function (newRecipe) {
         const ingredients = Object.entries(newRecipe).filter(entry => {
             return entry[0].startsWith('ingredient') && entry[1] !== ''
         }).map(ing => {
-            const ingArr = ing[1].replaceAll(' ', '').split(',');
+            const ingArr = ing[1].split(',').map(el => el.trim());
             if (ingArr.length !== 3) throw new Error('Wrong Ingredient Format! Please Use the correct format :)')
             const [quantity, unit, description] = ingArr;
             return {
@@ -155,13 +158,13 @@ export const uploadRecipe = async function (newRecipe) {
 
         }
         // console.log(recipe );
-        const data = await sendJson(`${API_URL}?key=${KEY}`, recipe);
+        const data = await AJAX(`${API_URL}?key=${KEY}`, recipe);
         //get our post data from the API
         console.log(data);
         //add to recipe object
         state.recipe = createRecipeObject(data);
         //added to bookmark
-        adBookMark(state.recipe);
+
 
     }
     catch (err) {

@@ -559,6 +559,13 @@ const controlAddRecipe = async function(newRecipe) {
         _recipeViewDefault.default.render(_model.state.recipe);
         //success Message
         _addRecipeViewDefault.default.renderMessage();
+        //render bookmarks cg bookmarks array now updated 
+        _bookmarkViewDefault.default.render(_model.state.bookMarks);
+        //change the id in the url cg otherwise when we load our recipe id will gone it will show the url id recipe
+        //we can use history api to change the url withour reloading the page
+        window.history.pushState(null, '', `#${_model.state.recipe.id}`) //it take 3 arguments , stat,title,url
+        ;
+        //other use of history api -> window.history.back()- automatically go back to the last page
         //close form window
         setTimeout(()=>{
             _addRecipeViewDefault.default.toogleWindow();
@@ -583,7 +590,7 @@ const init = function() {
 };
 init();
 
-},{"./model":"6Yfb5","./views/recipeView":"9q0mt","./views/searchView":"51HTZ","./views/resultView":"dmYXU","core-js/stable":"eIyVg","regenerator-runtime/runtime":"cH8Iq","./views/paginationView":"c2v8w","./views/bookmarkView":"1r5Cz","./views/addRecipeView":"4NyJt","@parcel/transformer-js/src/esmodule-helpers.js":"JacNc","./config":"beA2m"}],"6Yfb5":[function(require,module,exports) {
+},{"./model":"6Yfb5","./views/recipeView":"9q0mt","./views/searchView":"51HTZ","./views/resultView":"dmYXU","core-js/stable":"eIyVg","regenerator-runtime/runtime":"cH8Iq","./views/paginationView":"c2v8w","./views/bookmarkView":"1r5Cz","./views/addRecipeView":"4NyJt","./config":"beA2m","@parcel/transformer-js/src/esmodule-helpers.js":"JacNc"}],"6Yfb5":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "state", ()=>state
@@ -604,6 +611,7 @@ parcelHelpers.export(exports, "uploadRecipe", ()=>uploadRecipe
 );
 var _regeneratorRuntime = require("regenerator-runtime");
 var _config = require("./config");
+// import { getJson, sendJson } from './helpers';
 var _helpers = require("./helpers");
 const state = {
     recipe: {
@@ -636,7 +644,7 @@ const createRecipeObject = function(data) {
 };
 const loadRecipe = async function(id) {
     try {
-        const data = await _helpers.getJson(`${_config.API_URL}/${id}`);
+        const data = await _helpers.AJAX(`${_config.API_URL}/${id}?key=${_config.KEY}`);
         state.recipe = createRecipeObject(data);
         //click korar por load hole to bookmark thake na new object set hoi tai jate bookmark identify kora jai tai array te check diye true kore dibo
         if (state.bookMarks.some((bookmark)=>bookmark.id === id
@@ -652,14 +660,19 @@ const loadRecipe = async function(id) {
 const loadSearchResult = async function(query) {
     try {
         state.search.query = query;
-        const data = await _helpers.getJson(`${_config.API_URL}?search=${query}`);
+        //using key in query loadd the result including our own key 
+        const data = await _helpers.AJAX(`${_config.API_URL}?search=${query}&key=${_config.KEY}`);
         // console.log(data);
         state.search.results = data.data.recipes.map((ing)=>{
             return {
                 id: ing.id,
                 image: ing.image_url,
                 publisher: ing.publisher,
-                title: ing.title
+                title: ing.title,
+                //result objects gula amader key sohoi fetch hoi tai key thakle proprty te add korbo na thakle na
+                ...ing.key && {
+                    key: ing.key
+                }
             };
         });
         state.search.page = 1;
@@ -720,7 +733,8 @@ const uploadRecipe = async function(newRecipe) {
         const ingredients = Object.entries(newRecipe).filter((entry)=>{
             return entry[0].startsWith('ingredient') && entry[1] !== '';
         }).map((ing)=>{
-            const ingArr = ing[1].replaceAll(' ', '').split(',');
+            const ingArr = ing[1].split(',').map((el)=>el.trim()
+            );
             if (ingArr.length !== 3) throw new Error('Wrong Ingredient Format! Please Use the correct format :)');
             const [quantity, unit, description] = ingArr;
             return {
@@ -741,13 +755,12 @@ const uploadRecipe = async function(newRecipe) {
             ingredients
         };
         // console.log(recipe );
-        const data = await _helpers.sendJson(`${_config.API_URL}?key=${_config.KEY}`, recipe);
+        const data = await _helpers.AJAX(`${_config.API_URL}?key=${_config.KEY}`, recipe);
         //get our post data from the API
         console.log(data);
         //add to recipe object
         state.recipe = createRecipeObject(data);
-        //added to bookmark
-        adBookMark(state.recipe);
+    //added to bookmark
     } catch (err) {
         throw err;
     }
@@ -1393,9 +1406,7 @@ exports.export = function(dest, destName, get) {
 },{}],"9l3Yy":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "getJson", ()=>getJson
-);
-parcelHelpers.export(exports, "sendJson", ()=>sendJson
+parcelHelpers.export(exports, "AJAX", ()=>AJAX
 );
 var _config = require("./config");
 const timeout = function(s) {
@@ -1405,10 +1416,18 @@ const timeout = function(s) {
         }, s * 1000);
     });
 };
-const getJson = async function(url) {
+const AJAX = async function(url, uploadData) {
     try {
+        const fetchPro = uploadData ? fetch(url, {
+            method: 'POST',
+            //headers are the information about the request
+            headers: {
+                'Content-Type': 'application/json' //tell the api that we are sending data in json format
+            },
+            body: JSON.stringify(uploadData)
+        }) : fetch(url);
         const res = await Promise.race([
-            fetch(url),
+            fetchPro,
             timeout(_config.TIMEOUT_SEC)
         ]);
         const data = await res.json();
@@ -1417,27 +1436,42 @@ const getJson = async function(url) {
     } catch (err) {
         throw err;
     }
-};
-const sendJson = async function(url, uploadData) {
+} /*
+export const getJson = async function (url) {
     try {
-        const res = await Promise.race([
-            fetch(url, {
-                method: 'POST',
-                //headers are the information about the request
-                headers: {
-                    'Content-Type': 'application/json' //tell the api that we are sending data in json format
-                },
-                body: JSON.stringify(uploadData)
-            }),
-            timeout(_config.TIMEOUT_SEC)
-        ]);
+        const res = await Promise.race([fetch(url), timeout(TIMEOUT_SEC)]);
+
         const data = await res.json();
         if (!res.ok) throw new Error(`${data.message} (${res.status})`);
         return data;
     } catch (err) {
+
+
         throw err;
     }
 };
+export const sendJson = async function (url, uploadData) {
+    try {
+        const res = await Promise.race([fetch(url, {
+            method: 'POST',
+            //headers are the information about the request
+            headers: {
+                'Content-Type': 'application/json'//tell the api that we are sending data in json format
+
+            },
+            body: JSON.stringify(uploadData)
+        }), timeout(TIMEOUT_SEC)]);
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(`${data.message} (${res.status})`);
+        return data;
+    } catch (err) {
+
+
+        throw err;
+    }
+};
+*/ ;
 
 },{"./config":"beA2m","@parcel/transformer-js/src/esmodule-helpers.js":"JacNc"}],"9q0mt":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
@@ -1453,7 +1487,7 @@ class ReciepView extends _viewDefault.default {
     _errorMessage = 'We could not find that recipe.  Please try another one!';
     _message = '';
     _generatedMarkup() {
-        return `<figure class="recipe__fig">\n        <img src="${this._data.image}" alt="${this._data.title}" crossorigin="anonymous" class="recipe__img"></img> \n        <h1 class="recipe__title">\n          <span>${this._data.title}</span>\n        </h1>\n      </figure>\n\n      <div class="recipe__details">\n        <div class="recipe__info">\n          <svg class="recipe__info-icon">\n            <use href="${_iconsSvgDefault.default}#icon-clock"></use>\n          </svg>\n          <span class="recipe__info-data recipe__info-data--minutes">${this._data.cookingTime}</span>\n          <span class="recipe__info-text">minutes</span>\n        </div>\n        <div class="recipe__info">\n          <svg class="recipe__info-icon">\n            <use href="${_iconsSvgDefault.default}#icon-users"></use>\n          </svg>\n          <span class="recipe__info-data recipe__info-data--people">${this._data.servings}</span>\n          <span class="recipe__info-text">servings</span>\n\n          <div class="recipe__info-buttons">\n            <button data-update-to="${this._data.servings - 1}" class="btn--tiny btn--update-servings">\n              <svg>\n                <use href="${_iconsSvgDefault.default}#icon-minus-circle"></use>\n              </svg>\n            </button>\n            <button data-update-to="${this._data.servings + 1}" class="btn--tiny btn--update-servings">\n              <svg>\n                <use href="${_iconsSvgDefault.default}#icon-plus-circle"></use>\n              </svg>\n            </button>\n          </div>\n        </div>\n\n        <div class="recipe__user-generated">\n        \n        </div>\n        <button class="btn--round btn--bookmark">\n          <svg class="">\n            <use href="${_iconsSvgDefault.default}#icon-bookmark${this._data.bookMarked ? '-fill' : ''}"></use>\n          </svg>\n        </button>\n      </div>\n\n      <div class="recipe__ingredients">\n        <h2 class="heading--2">Recipe ingredients</h2>\n        <ul class="recipe__ingredient-list">\n        ${this._data.ingredients.map((ing)=>this._generateMarkUpIngredient(ing)
+        return `<figure class="recipe__fig">\n        <img src="${this._data.image}" alt="${this._data.title}" crossorigin="anonymous" class="recipe__img"></img> \n        <h1 class="recipe__title">\n          <span>${this._data.title}</span>\n        </h1>\n      </figure>\n\n      <div class="recipe__details">\n        <div class="recipe__info">\n          <svg class="recipe__info-icon">\n            <use href="${_iconsSvgDefault.default}#icon-clock"></use>\n          </svg>\n          <span class="recipe__info-data recipe__info-data--minutes">${this._data.cookingTime}</span>\n          <span class="recipe__info-text">minutes</span>\n        </div>\n        <div class="recipe__info">\n          <svg class="recipe__info-icon">\n            <use href="${_iconsSvgDefault.default}#icon-users"></use>\n          </svg>\n          <span class="recipe__info-data recipe__info-data--people">${this._data.servings}</span>\n          <span class="recipe__info-text">servings</span>\n\n          <div class="recipe__info-buttons">\n            <button data-update-to="${this._data.servings - 1}" class="btn--tiny btn--update-servings">\n              <svg>\n                <use href="${_iconsSvgDefault.default}#icon-minus-circle"></use>\n              </svg>\n            </button>\n            <button data-update-to="${this._data.servings + 1}" class="btn--tiny btn--update-servings">\n              <svg>\n                <use href="${_iconsSvgDefault.default}#icon-plus-circle"></use>\n              </svg>\n            </button>\n          </div>\n        </div>\n\n        <div class="recipe__user-generated ${this._data.key ? '' : 'hidden'}">\n        <svg>\n        <use href="${_iconsSvgDefault.default}#icon-user"></use>\n        </svg>\n        \n        </div>\n        <button class="btn--round btn--bookmark">\n          <svg class="">\n            <use href="${_iconsSvgDefault.default}#icon-bookmark${this._data.bookMarked ? '-fill' : ''}"></use>\n          </svg>\n        </button>\n      </div>\n\n      <div class="recipe__ingredients">\n        <h2 class="heading--2">Recipe ingredients</h2>\n        <ul class="recipe__ingredient-list">\n        ${this._data.ingredients.map((ing)=>this._generateMarkUpIngredient(ing)
         ).join('')}\n\n        </ul>\n      </div>\n\n      <div class="recipe__directions">\n        <h2 class="heading--2">How to cook it</h2>\n        <p class="recipe__directions-text">\n          This recipe was carefully designed and tested by\n          <span class="recipe__publisher">${this._data.publisher}</span>. Please check out\n          directions at their website.\n        </p>\n        <a\n          class="btn--small recipe__btn"\n          href="${this._data.sourceUrl}"\n          target="_blank"\n        >\n          <span>Directions</span>\n          <svg class="search__icon">\n            <use href="${_iconsSvgDefault.default}#icon-arrow-right"></use>\n          </svg>\n        </a>\n      </div>`;
     }
     //handling event in mvc architecture-> publisher
@@ -1906,16 +1940,18 @@ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _view = require("./View");
 var _viewDefault = parcelHelpers.interopDefault(_view);
+var _iconsSvg = require("url:../../img/icons.svg"); //parcel 2 style
+var _iconsSvgDefault = parcelHelpers.interopDefault(_iconsSvg);
 class PreviewView extends _viewDefault.default {
     _generatedMarkup() {
         const id = window.location.hash.slice(1);
         console.log(this._data);
-        return `<li class="preview">\n       <a class="preview__link ${this._data.id === id ? `preview__link--active` : ''} " href="#${this._data.id}">\n         <figure class="preview__fig">\n           <img src="${this._data.image}" alt="${this._data.title}" crossorigin="anonymous" />\n         </figure>\n         <div class="preview__data">\n           <h4 class="preview__title">${this._data.title}</h4>\n           <p class="preview__publisher">${this._data.publisher}</p>\n           \n         </div>\n       </a>\n       </li>`;
+        return `<li class="preview">\n       <a class="preview__link ${this._data.id === id ? `preview__link--active` : ''} " href="#${this._data.id}">\n         <figure class="preview__fig">\n           <img src="${this._data.image}" alt="${this._data.title}" crossorigin="anonymous" />\n         </figure>\n         <div class="preview__data">\n           <h4 class="preview__title">${this._data.title}</h4>\n           <p class="preview__publisher">${this._data.publisher}</p>\n           \n           <div class="preview__user-generated ${this._data.key ? '' : 'hidden'}">\n           <svg>\n           <use href="${_iconsSvgDefault.default}#icon-user"></use>\n           </svg>\n           \n           </div>\n         </div>\n       </a>\n       </li>`;
     }
 }
 exports.default = new PreviewView();
 
-},{"./View":"8rtS4","@parcel/transformer-js/src/esmodule-helpers.js":"JacNc"}],"eIyVg":[function(require,module,exports) {
+},{"./View":"8rtS4","url:../../img/icons.svg":"iwCpK","@parcel/transformer-js/src/esmodule-helpers.js":"JacNc"}],"eIyVg":[function(require,module,exports) {
 require('../modules/es.symbol');
 require('../modules/es.symbol.description');
 require('../modules/es.symbol.async-iterator');

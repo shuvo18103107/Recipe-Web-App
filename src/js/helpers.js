@@ -6,6 +6,39 @@ const timeout = function (s) {
         }, s * 1000);
     });
 };
+
+export const AJAX = async function (url, uploadData = undefined) {
+
+    try {
+        const fetchPro = uploadData ? fetch(url, {
+            method: 'POST',
+            //headers are the information about the request
+            headers: {
+                'Content-Type': 'application/json'//tell the api that we are sending data in json format
+
+            },
+            body: JSON.stringify(uploadData)
+        }) : fetch(url);
+        const res = await Promise.race([fetchPro, timeout(TIMEOUT_SEC)]);
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(`${data.message} (${res.status})`);
+        return data;
+    } catch (err) {
+
+
+        throw err;
+    }
+}
+
+
+
+
+
+
+
+
+/*
 export const getJson = async function (url) {
     try {
         const res = await Promise.race([fetch(url), timeout(TIMEOUT_SEC)]);
@@ -40,3 +73,4 @@ export const sendJson = async function (url, uploadData) {
         throw err;
     }
 };
+*/

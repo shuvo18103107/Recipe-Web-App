@@ -118,6 +118,14 @@ const controlAddRecipe = async function (newRecipe) {
 
     //success Message
     addRecipeView.renderMessage();
+    //render bookmarks cg bookmarks array now updated 
+    bookmarkView.render(model.state.bookMarks)
+
+    //change the id in the url cg otherwise when we load our recipe id will gone it will show the url id recipe
+    //we can use history api to change the url withour reloading the page
+    window.history.pushState(null, '', `#${model.state.recipe.id}`)//it take 3 arguments , stat,title,url
+    //other use of history api -> window.history.back()- automatically go back to the last page
+
     //close form window
     setTimeout(() => {
       addRecipeView.toogleWindow()
