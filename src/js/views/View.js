@@ -1,6 +1,15 @@
 import icons from 'url:../../img/icons.svg'; //parcel 2 style
 export default class View {
   _data;
+  /**
+   * Render the recieve object to the DOM
+   * @param {Object| object[]} data the data to be rendered(eg:recipe)
+   * @param {boolean} [render = true]if false create markup string insted of rendering to the DOM
+   * @returns {undefined | string} a markup string is returned if render = false
+   * @this  {object} View instance
+   * @author Mohammad Ali Shuvo
+  */
+
   render(data, render = true) {
     //object pass korar time e kono element fetch na hoile ei guard class trigger korbe
     if (!data || (Array.isArray(data) && data.length === 0))
