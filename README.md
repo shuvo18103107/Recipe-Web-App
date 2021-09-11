@@ -28,7 +28,7 @@ Parcel, Sass
 
 ### Project Architecture
 
-# ![architecture](src/img/arc.png)
+# ![architecture](src/img/arc.PNG)
 
 Built using the MVC Architecture. View class extends the rest of the components. Controller keeps bidirectional dataflow. SCSS files are divided for major components.
 
