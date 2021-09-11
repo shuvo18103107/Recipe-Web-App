@@ -1,5 +1,4 @@
-# Recipe-Web-App
-# [Forkify](https://recipeapp-forkify.netlify.app/)
+# A Recipe-Searching-Application
 > by [Mohammad Ali Shuvo](https://github.com/shuvo18103107)
 # ![showcase](src/img/demo.png)
 
