@@ -475,6 +475,7 @@ var _bookmarkView = require("./views/bookmarkView");
 var _bookmarkViewDefault = parcelHelpers.interopDefault(_bookmarkView);
 var _addRecipeView = require("./views/addRecipeView");
 var _addRecipeViewDefault = parcelHelpers.interopDefault(_addRecipeView);
+var _config = require("./config");
 // //parcel hot reload
 // if (module.hot) {
 //   module.hot.accept();
@@ -546,8 +547,26 @@ const controlBookMarks = function() {
     //load howar sathe sathe amra localstorage theke data to paici agei thn oita render korbo jate update erpr call korle compare korte pare
     _bookmarkViewDefault.default.render(_model.state.bookMarks);
 };
-const controlAddRecipe = function(newRecipe) {
-    console.log(newRecipe);
+const controlAddRecipe = async function(newRecipe) {
+    // console.log(newRecipe);
+    try {
+        //show loading spinner
+        _addRecipeViewDefault.default.renderSpinner();
+        //upload the new reciupe data
+        await _model.uploadRecipe(newRecipe);
+        console.log(_model.state.recipe);
+        //render our added recipe 
+        _recipeViewDefault.default.render(_model.state.recipe);
+        //success Message
+        _addRecipeViewDefault.default.renderMessage();
+        //close form window
+        setTimeout(()=>{
+            _addRecipeViewDefault.default.toogleWindow();
+        }, _config.MODAL_CLOSE_SEC * 1000);
+    } catch (err) {
+        console.error(`💥${err}`);
+        _addRecipeViewDefault.default.renderError(err.message);
+    }
 //upload the new recipe data
 };
 //Event handlers technique in MVC using publisher subscriber design pattern
@@ -564,7 +583,7 @@ const init = function() {
 };
 init();
 
-},{"./model":"6Yfb5","./views/recipeView":"9q0mt","./views/searchView":"51HTZ","./views/resultView":"dmYXU","core-js/stable":"eIyVg","regenerator-runtime/runtime":"cH8Iq","./views/paginationView":"c2v8w","./views/bookmarkView":"1r5Cz","./views/addRecipeView":"4NyJt","@parcel/transformer-js/src/esmodule-helpers.js":"JacNc"}],"6Yfb5":[function(require,module,exports) {
+},{"./model":"6Yfb5","./views/recipeView":"9q0mt","./views/searchView":"51HTZ","./views/resultView":"dmYXU","core-js/stable":"eIyVg","regenerator-runtime/runtime":"cH8Iq","./views/paginationView":"c2v8w","./views/bookmarkView":"1r5Cz","./views/addRecipeView":"4NyJt","@parcel/transformer-js/src/esmodule-helpers.js":"JacNc","./config":"beA2m"}],"6Yfb5":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "state", ()=>state
@@ -581,6 +600,8 @@ parcelHelpers.export(exports, "adBookMark", ()=>adBookMark
 );
 parcelHelpers.export(exports, "deleteBookMark", ()=>deleteBookMark
 );
+parcelHelpers.export(exports, "uploadRecipe", ()=>uploadRecipe
+);
 var _regeneratorRuntime = require("regenerator-runtime");
 var _config = require("./config");
 var _helpers = require("./helpers");
@@ -595,22 +616,28 @@ const state = {
     },
     bookMarks: []
 };
+const createRecipeObject = function(data) {
+    const { recipe  } = data.data;
+    //now create new recipe object based on that
+    return {
+        id: recipe.id,
+        title: recipe.title,
+        publisher: recipe.publisher,
+        sourceUrl: recipe.source_url,
+        image: recipe.image_url,
+        servings: recipe.servings,
+        cookingTime: recipe.cooking_time,
+        ingredients: recipe.ingredients,
+        //trick for conditionally add proprties to an object
+        ...recipe.key && {
+            key: recipe.key
+        }
+    };
+};
 const loadRecipe = async function(id) {
     try {
         const data = await _helpers.getJson(`${_config.API_URL}/${id}`);
-        //recipe object property change and give a nice name to understand
-        const { recipe  } = data.data;
-        //now create new recipe object based on that
-        state.recipe = {
-            id: recipe.id,
-            title: recipe.title,
-            publisher: recipe.publisher,
-            sourceUrl: recipe.source_url,
-            image: recipe.image_url,
-            servings: recipe.servings,
-            cookingTime: recipe.cooking_time,
-            ingredients: recipe.ingredients
-        };
+        state.recipe = createRecipeObject(data);
         //click korar por load hole to bookmark thake na new object set hoi tai jate bookmark identify kora jai tai array te check diye true kore dibo
         if (state.bookMarks.some((bookmark)=>bookmark.id === id
         )) state.recipe.bookMarked = true;
@@ -681,11 +708,50 @@ const init = function() {
     const storage = localStorage.getItem('bookmarks');
     if (storage) state.bookMarks = JSON.parse(storage);
 };
-init(); //clear all bookmarks for developing purpous 
- // const clearBookMarks = function () {
- //     localStorage.clear('bookmarks')
- // }
- // clearBookMarks();
+init();
+//clear all bookmarks for developing purpous 
+const clearBookMarks = function() {
+    localStorage.clear('bookmarks');
+};
+const uploadRecipe = async function(newRecipe) {
+    try {
+        //goal: make this object same as the Api object pattern
+        //1. take the ingredients data and put them into a object
+        const ingredients = Object.entries(newRecipe).filter((entry)=>{
+            return entry[0].startsWith('ingredient') && entry[1] !== '';
+        }).map((ing)=>{
+            const ingArr = ing[1].replaceAll(' ', '').split(',');
+            if (ingArr.length !== 3) throw new Error('Wrong Ingredient Format! Please Use the correct format :)');
+            const [quantity, unit, description] = ingArr;
+            return {
+                quantity: quantity ? +quantity : null,
+                unit,
+                description
+            };
+        });
+        console.log(ingredients);
+        //create object for the API
+        const recipe = {
+            title: newRecipe.title,
+            source_url: newRecipe.sourceUrl,
+            image_url: newRecipe.image,
+            publisher: newRecipe.publisher,
+            cooking_time: +newRecipe.cookingTime,
+            servings: +newRecipe.servings,
+            ingredients
+        };
+        // console.log(recipe );
+        const data = await _helpers.sendJson(`${_config.API_URL}?key=${_config.KEY}`, recipe);
+        //get our post data from the API
+        console.log(data);
+        //add to recipe object
+        state.recipe = createRecipeObject(data);
+        //added to bookmark
+        adBookMark(state.recipe);
+    } catch (err) {
+        throw err;
+    }
+};
 
 },{"regenerator-runtime":"cH8Iq","./config":"beA2m","./helpers":"9l3Yy","@parcel/transformer-js/src/esmodule-helpers.js":"JacNc"}],"cH8Iq":[function(require,module,exports) {
 /**
@@ -1280,11 +1346,17 @@ parcelHelpers.export(exports, "END", ()=>END
 );
 parcelHelpers.export(exports, "RES_PER_PAGE", ()=>RES_PER_PAGE
 );
+parcelHelpers.export(exports, "KEY", ()=>KEY
+);
+parcelHelpers.export(exports, "MODAL_CLOSE_SEC", ()=>MODAL_CLOSE_SEC
+);
 const API_URL = 'https://forkify-api.herokuapp.com/api/v2/recipes';
 const TIMEOUT_SEC = 10;
 const START = 0;
 const END = 9;
 const RES_PER_PAGE = 10;
+const KEY = '243d910d-556b-4010-a78c-48130bb1025f';
+const MODAL_CLOSE_SEC = 2.5;
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"JacNc"}],"JacNc":[function(require,module,exports) {
 exports.interopDefault = function(a) {
@@ -1323,6 +1395,8 @@ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "getJson", ()=>getJson
 );
+parcelHelpers.export(exports, "sendJson", ()=>sendJson
+);
 var _config = require("./config");
 const timeout = function(s) {
     return new Promise(function(_, reject) {
@@ -1335,6 +1409,26 @@ const getJson = async function(url) {
     try {
         const res = await Promise.race([
             fetch(url),
+            timeout(_config.TIMEOUT_SEC)
+        ]);
+        const data = await res.json();
+        if (!res.ok) throw new Error(`${data.message} (${res.status})`);
+        return data;
+    } catch (err) {
+        throw err;
+    }
+};
+const sendJson = async function(url, uploadData) {
+    try {
+        const res = await Promise.race([
+            fetch(url, {
+                method: 'POST',
+                //headers are the information about the request
+                headers: {
+                    'Content-Type': 'application/json' //tell the api that we are sending data in json format
+                },
+                body: JSON.stringify(uploadData)
+            }),
             timeout(_config.TIMEOUT_SEC)
         ]);
         const data = await res.json();
@@ -1466,7 +1560,7 @@ class View {
     }
     renderMessage(message = this._message) {
         const markup = `\n      <div class="message">\n      <div>\n        <svg>\n          <use href="${_iconsSvgDefault.default}#icon-smile"></use>\n        </svg>\n      </div>\n      <p>${message}</p>\n    </div>`;
-        this._clear();
+        this.clear();
         this._parentElement.insertAdjacentHTML('afterbegin', markup);
     }
 }
@@ -13687,8 +13781,11 @@ class AddRecipeView extends _viewDefault.default {
     _overlay = document.querySelector('.overlay');
     _btnOpen = document.querySelector('.nav__btn--add-recipe');
     _btnClose = document.querySelector('.btn--close-modal');
+    _message = 'Recipe Was SuccessFully Uploaded';
     constructor(){
-        super();
+        super() //ekhane parent class identify korte super use kora lagbe cg this kon class er use korbe view naki recipe ta super thick korbe
+        ;
+        console.log(this);
         //child class er this access korte hoile constructor e super() call korte hoi
         this._addHandlerShowWindow();
         this._addHandlerHideWindow();

@@ -1,6 +1,6 @@
 import { async } from 'regenerator-runtime';
-import { API_URL, END, RES_PER_PAGE, START } from './config';
-import { getJson } from './helpers';
+import { API_URL, END, KEY, RES_PER_PAGE, START } from './config';
+import { getJson, sendJson } from './helpers';
 import { getJson } from './helpers';
 
 export const state = {
@@ -13,24 +13,30 @@ export const state = {
     },
     bookMarks: [],
 };
+const createRecipeObject = function (data) { //recipe object property change and give a nice name to understand
+    const { recipe } = data.data;
+    //now create new recipe object based on that
+    return {
+        id: recipe.id,
+        title: recipe.title,
+        publisher: recipe.publisher,
+        sourceUrl: recipe.source_url,
+        image: recipe.image_url,
+        servings: recipe.servings,
+        cookingTime: recipe.cooking_time,
+        ingredients: recipe.ingredients,
+        //trick for conditionally add proprties to an object
+        ...(recipe.key && { key: recipe.key })
+        //key:recipe.key if key exist
+    };
 
+}
 export const loadRecipe = async function (id) {
     try {
         const data = await getJson(`${API_URL}/${id}`);
 
-        //recipe object property change and give a nice name to understand
-        const { recipe } = data.data;
-        //now create new recipe object based on that
-        state.recipe = {
-            id: recipe.id,
-            title: recipe.title,
-            publisher: recipe.publisher,
-            sourceUrl: recipe.source_url,
-            image: recipe.image_url,
-            servings: recipe.servings,
-            cookingTime: recipe.cooking_time,
-            ingredients: recipe.ingredients,
-        };
+        state.recipe = createRecipeObject(data);
+
         //click korar por load hole to bookmark thake na new object set hoi tai jate bookmark identify kora jai tai array te check diye true kore dibo
         if (state.bookMarks.some(bookmark => bookmark.id === id)) {
             state.recipe.bookMarked = true;
@@ -113,8 +119,58 @@ const init = function () {
 }
 init();
 
+
 //clear all bookmarks for developing purpous 
-// const clearBookMarks = function () {
-//     localStorage.clear('bookmarks')
-// }
+const clearBookMarks = function () {
+    localStorage.clear('bookmarks')
+}
 // clearBookMarks();
+export const uploadRecipe = async function (newRecipe) {
+    try {
+        //goal: make this object same as the Api object pattern
+
+        //1. take the ingredients data and put them into a object
+        const ingredients = Object.entries(newRecipe).filter(entry => {
+            return entry[0].startsWith('ingredient') && entry[1] !== ''
+        }).map(ing => {
+            const ingArr = ing[1].replaceAll(' ', '').split(',');
+            if (ingArr.length !== 3) throw new Error('Wrong Ingredient Format! Please Use the correct format :)')
+            const [quantity, unit, description] = ingArr;
+            return {
+                quantity: quantity ? +quantity : null, unit, description
+            };
+
+        })
+        console.log(ingredients);
+        //create object for the API
+        const recipe = {
+            title: newRecipe.title,
+            source_url: newRecipe.sourceUrl,
+            image_url: newRecipe.image,
+            publisher: newRecipe.publisher,
+            cooking_time: +newRecipe.cookingTime,
+            servings: +newRecipe.servings,
+            ingredients
+
+
+        }
+        // console.log(recipe );
+        const data = await sendJson(`${API_URL}?key=${KEY}`, recipe);
+        //get our post data from the API
+        console.log(data);
+        //add to recipe object
+        state.recipe = createRecipeObject(data);
+        //added to bookmark
+        adBookMark(state.recipe);
+
+    }
+    catch (err) {
+        throw err;
+    }
+
+}
+
+
+
+
+

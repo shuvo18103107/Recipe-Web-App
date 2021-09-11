@@ -7,9 +7,10 @@ class AddRecipeView extends View {
     _overlay = document.querySelector('.overlay');
     _btnOpen = document.querySelector('.nav__btn--add-recipe');
     _btnClose = document.querySelector('.btn--close-modal');
-
+    _message = 'Recipe Was SuccessFully Uploaded'
     constructor() {
-        super();
+        super()//ekhane parent class identify korte super use kora lagbe cg this kon class er use korbe view naki recipe ta super thick korbe
+        console.log(this);
         //child class er this access korte hoile constructor e super() call korte hoi
         this._addHandlerShowWindow();
         this._addHandlerHideWindow();

@@ -15,6 +15,7 @@ import paginationView from './views/paginationView';
 
 import bookmarkView from './views/bookmarkView';
 import addRecipeView from './views/addRecipeView';
+import { MODAL_CLOSE_SEC } from './config';
 // //parcel hot reload
 // if (module.hot) {
 //   module.hot.accept();
@@ -102,9 +103,33 @@ const controlBookMarks = function () {
   //load howar sathe sathe amra localstorage theke data to paici agei thn oita render korbo jate update erpr call korle compare korte pare
   bookmarkView.render(model.state.bookMarks)
 }
-const controlAddRecipe = function (newRecipe) {
-  console.log(newRecipe);
+const controlAddRecipe = async function (newRecipe) {
+  // console.log(newRecipe);
+  try {
+    //show loading spinner
+    addRecipeView.renderSpinner()
+    //upload the new reciupe data
+    await model.uploadRecipe(newRecipe);
+
+    console.log(model.state.recipe);
+
+    //render our added recipe 
+    recipeView.render(model.state.recipe);
+
+    //success Message
+    addRecipeView.renderMessage();
+    //close form window
+    setTimeout(() => {
+      addRecipeView.toogleWindow()
+    }, MODAL_CLOSE_SEC * 1000);
+
+  }
+  catch (err) {
+    console.error(`💥${err}`);
+    addRecipeView.renderError(err.message)
+  }
   //upload the new recipe data
+
 }
 //Event handlers technique in MVC using publisher subscriber design pattern
 const init = function () {
