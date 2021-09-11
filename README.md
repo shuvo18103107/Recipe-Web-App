@@ -90,7 +90,7 @@ an example API GET request looks like this:
     }
 }
 ```
-##Furure Improvment 
+## Furure Improvment 
 - Display number of pages between the pagination button.
 - ability to sort search results by duration or number of ingredients.
 - perform ingredient validation in view , before submitting the form.
