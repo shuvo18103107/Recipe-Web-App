@@ -97,7 +97,7 @@ an example API GET request looks like this:
 - improve recipe ingredient input: sepearate in multiple fields and allow more than 6 ingredients.
 - shopping list feature: button on recipe to add ingredients to a list.
 - weekly meal planning feature : assign recipe to the next 7 days and show on a weekly calender, can create a dropdown on each recipe then show it for the next 7 days.
-- get nutrition data on each ingredients from spoonacular API(https://spponacular.com/food-api) and calculated total calories of recipe.
+- get nutrition data on each ingredients from spoonacular API(https://spoonacular.com/food-api) and calculated total calories of recipe.
 
 ## Thank you!
 
