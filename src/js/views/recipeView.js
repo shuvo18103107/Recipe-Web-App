@@ -1,7 +1,7 @@
 import View from './View';
 // import icons from '../img/icons.svg' //parcel 1 style
 import icons from 'url:../../img/icons.svg'; //parcel 2 style
-import { Fraction } from 'fractional';
+import { Fraction } from 'fractional.js';
 import View from './View';
 
 class ReciepView extends View {

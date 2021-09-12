@@ -127,6 +127,7 @@ const controlAddRecipe = async function (newRecipe) {
     //other use of history api -> window.history.back()- automatically go back to the last page
 
     //close form window
+
     setTimeout(() => {
       addRecipeView.toogleWindow()
     }, MODAL_CLOSE_SEC * 1000);
