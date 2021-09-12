@@ -1,7 +1,5 @@
 # A Recipe-Searching-Application
 > by [Mohammad Ali Shuvo](https://github.com/shuvo18103107)
-## Deployment
-Deployed Website: https://forkify-shuvo.netlify.app/
 # ![showcase](src/img/demo.png)
 
 ## Introduction
